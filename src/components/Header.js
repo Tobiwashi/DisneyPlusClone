@@ -1,47 +1,96 @@
+import { useEffect } from 'react'
 import styled from 'styled-components'
+import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 import { auth, provider } from '../firebase'
+import { selectUserName, selectUserEmail, selectUserPhoto, setUserLoginDetails, setSignoutState } from '../features/user/userSlice'
+
 const Header = (props) => {
 
-    const handleAuth = () => {
-        auth.signInWithPopup(provider).then((result) => {
-            console.log(result)
-        }).catch((error) => {
-            alert(error.message)
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const userName = useSelector(selectUserName);
+    const userPhoto = useSelector(selectUserPhoto);
+
+    useEffect(() => {
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                setUser(user)
+                navigate('/home')
+            }
         })
+    }, [userName]);
+
+    const handleAuth = () => {
+        if (!userName) {
+            auth.signInWithPopup(provider).then((result) => {
+                setUser(result.user)
+            }).catch((error) => {
+                alert(error.message)
+            })
+        } else if (userName) {
+            auth.signOut().then(() => {
+                dispatch(setSignoutState())
+                navigate('/')
+            }).catch((err) => alert(err.message))
+        }
     }
+
+    const setUser = (user) => {
+        dispatch(
+            setUserLoginDetails({
+                name: user.displayName,
+                email: user.email,
+                photo: user.photoURL,
+            })
+        );
+    };
 
     return (
         <Nav>
             <Logo>
                 <img src='images\logo.svg' alt='Disney Logo'></img>
             </Logo>
-            <NavMenu>
-                <a href='/home'>
-                    <img src='images\home-icon.svg' alt='Home' />
-                    <span>HOME</span>
-                </a>
-                <a href='/home'>
-                    <img src='images\search-icon.svg' alt='Home' />
-                    <span>SEARCH</span>
-                </a>
-                <a href='/home'>
-                    <img src='images\watchlist-icon.svg' alt='Home' />
-                    <span>WATCHLIST</span>
-                </a>
-                <a href='/home'>
-                    <img src='images\original-icon.svg' alt='Home' />
-                    <span>ORIGINALS</span>
-                </a>
-                <a href='/home'>
-                    <img src='images\movie-icon.svg' alt='Home' />
-                    <span>MOVIES</span>
-                </a>
-                <a href='/home'>
-                    <img src='images\series-icon.svg' alt='Home' />
-                    <span>SERIES</span>
-                </a>
-            </NavMenu>
-            <Login onClick={handleAuth}>Login</Login>
+            {
+                !userName ? (
+                    <Login onClick={handleAuth}>Login</Login>
+                ) : (
+                    <>
+                        <NavMenu>
+                            <a href='/home'>
+                                <img src='images\home-icon.svg' alt='Home' />
+                                <span>HOME</span>
+                            </a>
+                            <a href='/home'>
+                                <img src='images\search-icon.svg' alt='Home' />
+                                <span>SEARCH</span>
+                            </a>
+                            <a href='/home'>
+                                <img src='images\watchlist-icon.svg' alt='Home' />
+                                <span>WATCHLIST</span>
+                            </a>
+                            <a href='/home'>
+                                <img src='images\original-icon.svg' alt='Home' />
+                                <span>ORIGINALS</span>
+                            </a>
+                            <a href='/home'>
+                                <img src='images\movie-icon.svg' alt='Home' />
+                                <span>MOVIES</span>
+                            </a>
+                            <a href='/home'>
+                                <img src='images\series-icon.svg' alt='Home' />
+                                <span>SERIES</span>
+                            </a>
+                        </NavMenu>
+                        <SignOut>
+                            <DropDown>
+                                <span onClick={handleAuth}>Logout</span>
+                            </DropDown>
+                            <UserImg src={userPhoto} alt={userName} />
+                        </SignOut>
+                    </>
+                )}
+
         </Nav>
     )
 }
@@ -153,6 +202,50 @@ transition: all .02 ease 0s;
     color: #000;
 }
 `
+const UserImg = styled.img`
+height: 100%;
+margin-right: 100px;
+margin-left: 15px;
+`
+
+const DropDown = styled.div`
+postion: absolute;
+margin-top: 11px;
+top: 48px;
+right: 0px;
+background: rgb(19,19,19);
+border: 1px solid rgba(151, 151, 151, 0.34);
+border-radius: 4px;
+box-shadow: rgb(0 0 0/ 50%) 0px 0px 18px 0px;
+padding: 10px;
+font-size: 14px;
+letter-spacing: 3px;
+width: 100px;
+opacity: 0;
+`
+const SignOut = styled.div`
+position: relative;
+height: 48px;
+width: 48px;
+display: flex;
+cursor: pointer;
+align-items: center;
+justify-content: center;
+
+${UserImg} {
+    border-radius: 50%;
+    width: 100%;
+    height 100%;
+}
+
+&:hover {
+    ${DropDown} {
+        opacity: 1;
+        transition-duration: 1s;
+    }
+}
+`
+
 
 
 export default Header
