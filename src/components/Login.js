@@ -44,7 +44,7 @@ height: 100vh;
 const BgImage = styled.div`
  height: 100%; 
  background-position: top;
- backgorund-size: cover;
+ background-size: cover;
  background-image: url("/images/login-background.jpg");
  position: absolute;
  top: 0;
