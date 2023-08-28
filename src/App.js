@@ -4,6 +4,7 @@ import Login from './components/Login'
 import Header from './components/Header';
 import Home from './components/Home';
 import './App.css';
+import Detail from './components/Detail';
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Routes>
           <Route path='/' element={<Login />}></Route>
           <Route path='/home' element={<Home />}></Route>
+          <Route path='/detail/:id' element={<Detail />}></Route>
         </Routes>
       </BrowserRouter>
     </div>
